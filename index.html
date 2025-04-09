@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Day Pass</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: white;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .container {
+      height: 100dvh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+	.header {
+	  padding: 20px;
+	  display: flex;
+	  justify-content: space-between;
+	  align-items: center;
+	  background: white;
+	  z-index: 2;
+	  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+	}
+
+	.left-block {
+	  display: flex;
+	  flex-direction: column;
+	}
+
+	.right-block {
+	  display: flex;
+	  flex-direction: column;
+	  align-items: center;
+	}
+
+	.date-block h1 {
+	  font-size: 44px;
+	  color: #2f7ef7;
+	  font-weight: 700;
+	  margin: 0;
+	}
+
+	.date-block p {
+	  font-size: 22px;
+	  color: #2f7ef7;
+	  font-weight: 600;
+	  margin: 4px 0;
+	}
+
+	.date-value {
+	  font-size: 16px;
+	  color: #0d0d0d;
+	  font-weight: 600;
+	  margin-top: 4px;
+	}
+
+	.time-value {
+	  font-size: 16px;
+	  color: #0d0d0d;
+	  font-weight: 600;
+	  margin-top: 4px;
+	}
+
+	.initials {
+	  background: #0d2161;
+	  color: white;
+	  font-weight: bold;
+	  padding: 12px 20px;
+	  border-radius: 30px;
+	  font-size: 22px;
+	  text-align: center;
+	}
+
+
+    .train-section {
+      position: relative;
+      flex-grow: 1;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .train-section video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: center;
+      pointer-events: none;
+      z-index: 3;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+    .grid-box {
+      width: 30%;
+      height: 30%;
+      margin: 1%;
+      background: rgba(0, 122, 255, 0.05); /* Default low opacity */
+      transition: background-color 0.3s ease, opacity 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .show-grid .grid-box {
+      background: rgba(0, 122, 255, 0.05); /* Reset all */
+    }
+
+    /* First row full */
+    .show-grid .grid-box:nth-child(1),
+    .show-grid .grid-box:nth-child(2),
+    .show-grid .grid-box:nth-child(3) {
+      background: rgba(0, 122, 255, 0.8);
+      opacity: 1;
+    }
+
+    /* Last row first 2 */
+    .show-grid .grid-box:nth-child(7),
+    .show-grid .grid-box:nth-child(8) {
+      background: rgba(0, 122, 255, 0.8);
+      opacity: 1;
+    }
+
+    /* Middle 3 boxes slightly visible */
+    .show-grid .grid-box:nth-child(4),
+    .show-grid .grid-box:nth-child(5),
+    .show-grid .grid-box:nth-child(6),
+    .show-grid .grid-box:nth-child(9) {
+      opacity: 0.1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+	<div class="header">
+	  <div class="left-block">
+		<div class="date-block">
+		  <h1>4-1</h1>
+		  <p>Day Pass</p>
+		</div>
+		<div id="dateInfo" class="date-value">--/--/----</div>
+	  </div>
+	  <div class="right-block">
+		<div class="initials">JK</div>
+		<div id="timeDisplay" class="time-value">--:--:--</div>
+	  </div>
+	</div>
+
+
+    <!-- Train section with touchable video -->
+    <div class="train-section">
+      <video id="trainVideo" autoplay loop muted playsinline>
+        <source src="video_1.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      <div class="grid-overlay" id="gridOverlay">
+        <!-- 9 grid boxes -->
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+        <div class="grid-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function updateTime() {
+      const now = new Date();
+      document.getElementById("dateInfo").innerText = now.toLocaleDateString();
+      document.getElementById("timeDisplay").innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    const video = document.getElementById("trainVideo");
+    const grid = document.getElementById("gridOverlay");
+    let gridVisible = false;
+
+    video.addEventListener("touchstart", () => {
+      gridVisible = !gridVisible;
+      if (gridVisible) {
+        grid.style.display = "flex";
+        grid.classList.add("show-grid");
+      } else {
+        grid.style.display = "none";
+        grid.classList.remove("show-grid");
+      }
+    });
+  </script>
+</body>
+</html>
